@@ -26,6 +26,12 @@ SECRET_KEY = 'django-insecure-#&8_%1(vwh_o#ns88^c$$qnna9=4of^r#5vmhu)8lhg!k9c)v6
 DEBUG = True
 
 ALLOWED_HOSTS = []
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",   # React frontend
+    "http://127.0.0.1:8000",   # অন্য লোকালহোস্ট
+    # "https://yourdomain.com",  # Production domain
+]
+
 
 
 # Application definition
@@ -37,9 +43,17 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'chartapp',
+    'daphne',
+    'channels',
+    'rest_framework',
+    'drf_yasg',
+    'corsheaders',
+
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -66,7 +80,8 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'chat_system.wsgi.application'
+# WSGI_APPLICATION = 'chat_system.wsgi.application'
+ASGI_APPLICATION = "chat_system.asgi.application"  
 
 
 # Database
@@ -120,3 +135,29 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+from datetime import timedelta
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    )
+}
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'AUTH_HEADER_TYPES': ('Bearer',),
+}
+
+
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("127.0.0.1", 6379)],   
+        },
+    },
+}
