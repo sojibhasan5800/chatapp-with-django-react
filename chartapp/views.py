@@ -53,7 +53,7 @@ class ConversationListCreateView(generics.ListCreateAPIView):
             )
 
     # Check if conversation already exists
-    
+
         existing_conversation = Conversation.objects.filter(
             participants__id=participants_data[0]
         ).filter(
@@ -71,3 +71,51 @@ class ConversationListCreateView(generics.ListCreateAPIView):
         #serialize the conversation
         serializer = self.get_serializer(conversation)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+
+
+class MessageListCreateView(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        conversation_id = self.kwargs['conversation_id']
+        conversation = self.get_conversation(conversation_id)
+
+        return conversation.messages.order_by('timestamp')
+
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return CreateMessageSerializer
+        return MessageSerializer
+
+    def perform_create(self, serializer):
+        #fetch conversation and validate user participation
+        print("Incoming conversation", self.request.data)
+        conversation_id = self.kwargs['conversation_id']
+        conversation = self.get_conversation(conversation_id)
+
+        serializer.save(sender=self.request.user, conversation=conversation)
+
+    def get_conversation(self, conversation_id):
+        #check if user is a participant of the conversation, it helps to fetch the conversation and 
+        #validate the participants
+        conversation = get_object_or_404(Conversation, id=conversation_id)
+        if self.request.user not in conversation.participants.all():
+            raise PermissionDenied('You are not a participant of this conversation')
+        return conversation
+
+class MessageRetrieveDestroyView(generics.RetrieveDestroyAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = MessageSerializer
+
+    def get_queryset(self):
+        conversation_id = self.kwargs['conversation_id']
+        return Message.objects.filter(conversation__id=conversation_id)
+
+    def perform_destroy(self, instance):
+        if instance.sender != self.request.user:
+            raise PermissionDenied('You are not the sender of this message')
+        instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    
+    
