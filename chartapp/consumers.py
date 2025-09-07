@@ -51,7 +51,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
 
     async def disconnect(self, close_code):
-        
+
         if hasattr(self, 'room_group_name'):
 
             user_data = await self.get_user_data(self.scope["user"])
@@ -71,5 +71,28 @@ class ChatConsumer(AsyncWebsocketConsumer):
             
 
     async def receive(self, text_data):
-     
-        pass
+
+        text_data_json = json.loads(text_data)
+        event_type = text_data_json.get('type')
+        
+        if event_type == 'chat_message':
+            message_content = text_data_json.get('message')
+            user_id = text_data_json.get('user')
+
+            try:
+                user = await self.get_user(user_id)
+                conversation = await self.get_conversation(self.conversation_id)
+                from .serializers import UserListSerializer
+                user_data = UserListSerializer(user).data
+
+                message = await self.save_message(conversation, user, message_content)
+                await self.channel_layer.group_send(
+                    self.room_group_name,
+                    {
+                        'type': 'chat_message',
+                        'message': message.content,
+                        'user': user_data,
+                        'timestamp': message.timestamp.isoformat(),
+                    }
+                )
+
