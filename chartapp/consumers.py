@@ -142,4 +142,31 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await self.send(text_data=json.dumps(event))
 
 
+    @sync_to_async
+    def get_user(self, user_id):
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+        return User.objects.get(id=user_id)
+
+    @sync_to_async
+    def get_user_data(self, user):
+        from .serializers import UserListSerializer
+        return UserListSerializer(user).data
+
+    @sync_to_async
+    def get_conversation(self, conversation_id):
+        from .models import Conversation
+        return Conversation.objects.get(id=conversation_id)
+
+    @sync_to_async
+    def save_message(self, conversation, user, content):
+        from .models import Message
+        return Message.objects.create(
+            conversation=conversation,
+            sender=user,
+            content=content
+        )
+
+
+
 
