@@ -37,6 +37,18 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         await self.accept()
 
+        user_data = await self.get_user_data(self.user)
+        
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {
+                'type': 'online_status',
+                'online_users': [user_data],
+                'status': 'online',
+            }
+        )
+
+
 
     async def disconnect(self, close_code):
     
