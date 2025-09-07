@@ -16,6 +16,17 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 decoded_data = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
                 self.user = await self.get_user(decoded_data['user_id']) #get the user from the token
                 self.scope['user'] = self.user
+                
+            except jwt.ExpiredSignatureError:
+                await self.close(code=4000)
+                return
+            except jwt.InvalidTokenError:
+                await self.close(code=4001)
+                return
+        else:
+            await self.close(code=4002)
+            return
+
 
         await self.accept()
 
