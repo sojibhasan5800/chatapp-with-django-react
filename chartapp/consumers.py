@@ -74,8 +74,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         text_data_json = json.loads(text_data)
         event_type = text_data_json.get('type')
-        
+
         if event_type == 'chat_message':
+
             message_content = text_data_json.get('message')
             user_id = text_data_json.get('user')
 
@@ -95,4 +96,21 @@ class ChatConsumer(AsyncWebsocketConsumer):
                         'timestamp': message.timestamp.isoformat(),
                     }
                 )
+            except Exception as e:
+                print(f"Error saving message: {e}")
+                
+        elif event_type == 'typing':
+            user_data = await self.get_user_data(self.scope['user'])
+            receiver_id = text_data_json.get('receiver')
+
+            if receiver_id and receiver_id != self.scope['user'].id:
+                await self.channel_layer.group_send(
+                    self.room_group_name,
+                    {
+                        'type': 'typing',
+                        'user': user_data,
+                        'receiver': receiver_id,
+                    }
+                )
+
 
