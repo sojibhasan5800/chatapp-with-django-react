@@ -71,22 +71,23 @@ class ChatConsumer(AsyncWebsocketConsumer):
             
 
     async def receive(self, text_data):
-
         text_data_json = json.loads(text_data)
         event_type = text_data_json.get('type')
 
         if event_type == 'chat_message':
-
             message_content = text_data_json.get('message')
             user_id = text_data_json.get('user')
 
             try:
                 user = await self.get_user(user_id)
+                
                 conversation = await self.get_conversation(self.conversation_id)
                 from .serializers import UserListSerializer
                 user_data = UserListSerializer(user).data
 
+                #say message to the group/database
                 message = await self.save_message(conversation, user, message_content)
+                #broadcast the message to the group
                 await self.channel_layer.group_send(
                     self.room_group_name,
                     {
@@ -98,19 +99,47 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 )
             except Exception as e:
                 print(f"Error saving message: {e}")
-                
+        
         elif event_type == 'typing':
-            user_data = await self.get_user_data(self.scope['user'])
-            receiver_id = text_data_json.get('receiver')
+            try:
+                user_data = await self.get_user_data(self.scope['user'])
+                receiver_id = text_data_json.get('receiver')
 
-            if receiver_id and receiver_id != self.scope['user'].id:
-                await self.channel_layer.group_send(
-                    self.room_group_name,
-                    {
-                        'type': 'typing',
-                        'user': user_data,
-                        'receiver': receiver_id,
-                    }
-                )
+                if receiver_id is not None:
+                    if isinstance(receiver_id, (str, int, float)):
+                        receiver_id = int(receiver_id)
+
+                        if receiver_id != self.scope['user'].id:
+                            print(f"{user_data['username']} is typing for Receiver: {receiver_id}")
+                            await self.channel_layer.group_send(
+                                self.room_group_name,
+                                {
+                                    'type': 'typing',
+                                    'user': user_data,
+                                    'receiver': receiver_id,
+                                }
+                            )
+                        else:
+                            print(f"User is typing for themselves")
+                    else:
+                        print(f"Invalid receiver ID: {type(receiver_id)}")
+                else:
+                    print("No receiver ID provided")
+            except ValueError as e:
+                print(f"Error parsing receiver ID: {e}")
+            except Exception as e:
+                print(f"Error getting user data: {e}")
+            
+
+
+    async def chat_message(self, event):
+        await self.send(text_data=json.dumps(event))
+    
+    async def typing(self, event):
+        await self.send(text_data=json.dumps(event))
+
+    async def online_status(self, event):
+        await self.send(text_data=json.dumps(event))
+
 
 
