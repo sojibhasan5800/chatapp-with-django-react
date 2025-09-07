@@ -53,6 +53,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         )
 
     async def disconnect(self, close_code):
+        
         if hasattr(self, 'room_group_name'):
             # notify others about the disconnect
             user_data = await self.get_user_data(self.scope["user"])
