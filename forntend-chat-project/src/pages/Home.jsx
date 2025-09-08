@@ -2,7 +2,7 @@ import React from "react";
 import '../styles/Home.css';
 
 const Home = () => {
-  const users = ["John Doe", "Jane Smith", "Alice Johnson", "Bob Brown"];
+//   const users = ["John Doe", "Jane Smith", "Alice Johnson", "Bob Brown"];
 
   return (
     <div className="home-container">
