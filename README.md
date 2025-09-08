@@ -50,6 +50,11 @@ The system supports real-time messaging, online status indicators, typing indica
 - Redis
 - PostgreSQL (or SQLite for local development)
 
+### 1. Clone the Repository
+```bash
+git clone https://github.com/sojibhasan5800/chatapp-with-django-react.git
+- cd chatapp-with-django-react
+
 ### Backend Setup
 1. **Create a Virtual Environment**:  
    ```bash
@@ -66,7 +71,7 @@ The system supports real-time messaging, online status indicators, typing indica
      ```
 3. **Navigate to the Backend Directory**:  
    ```bash
-   cd chatsystemproj
+   cd Backend_Chat_Project
    ```
 4. **Install Dependencies**:  
    ```bash
@@ -82,7 +87,7 @@ The system supports real-time messaging, online status indicators, typing indica
    ```
 7. **Run Daphne** (for WebSocket support):  
    ```bash
-   daphne -b 0.0.0.0 -p 8000 chatsystemproj.asgi:application
+   daphne -b 0.0.0.0 -p 8000 chat_system.asgi:application
    ```
 
 ### Frontend Setup
