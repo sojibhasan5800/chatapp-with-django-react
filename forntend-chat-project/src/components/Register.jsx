@@ -13,8 +13,10 @@ const Register = () => {
     e.preventDefault();
     try {
       const response = await api.post('auth/register/', formData);
+      console.log(response)
       setMessage('Registration successful! You can now log in.');
     } catch (error) {
+        console.log("whited balck")
       setMessage('Registration failed. Please try again.');
       console.error('Registration error:', error.response ? error.response.data : error.message);
     }
