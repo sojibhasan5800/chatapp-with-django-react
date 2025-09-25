@@ -7,6 +7,7 @@ from .models import *
 from .serializers import *
 from rest_framework.exceptions import PermissionDenied
 from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 
 
 class CreateUserView(generics.CreateAPIView):
@@ -61,9 +62,38 @@ class ConversationListCreateView(generics.ListCreateAPIView):
         return (Conversation.objects
                 .filter(participants=self.request.user)
                 .prefetch_related('participants'))
+    
+    @swagger_auto_schema(
+        operation_summary="List user conversations",
+        operation_description="Retrieve all conversations for the logged-in user",
+        tags=['Conversations']
+        )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
 
     # create method
-    def create(self, request, *args, **kwargs):
+    @swagger_auto_schema(
+        operation_summary="Create a conversation",
+        operation_description="Create a conversation with exactly two participants (request user included). Validates duplicates.",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=['participants'],
+            properties={
+                'participants': openapi.Schema(
+                    type=openapi.TYPE_ARRAY,
+                    items=openapi.Items(type=openapi.TYPE_INTEGER),
+                    description='IDs of the two participants (must include request user)'
+                )
+            }
+        ),
+        responses={
+            201: ConversationSerializer,
+            400: 'Bad Request (invalid participants or conversation already exists)',
+            403: 'Forbidden (request user not included)'
+        },
+        tags=['Conversations']
+    )
+    def post(self, request, *args, **kwargs):
         participants_data = request.data.get('participants', [])
      
     # Check exactly two participants
