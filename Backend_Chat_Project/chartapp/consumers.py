@@ -4,8 +4,8 @@ import jwt
 from channels.generic.websocket import AsyncWebsocketConsumer
 
 from django.conf import settings
-
 from urllib.parse import parse_qs
+
 
 
 class ChatConsumer(AsyncWebsocketConsumer):
@@ -54,7 +54,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
         )
 
     async def disconnect(self, close_code):
-        
         if hasattr(self, 'room_group_name'):
             # notify others about the disconnect
             user_data = await self.get_user_data(self.scope["user"])
