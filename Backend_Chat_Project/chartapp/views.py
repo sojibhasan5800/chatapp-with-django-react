@@ -18,6 +18,14 @@ class UserListView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
 
 class ConversationListCreateView(generics.ListCreateAPIView):
+    """
+    list:
+    Retrieve all conversations of the logged-in user.
+
+    create:
+    Create a new conversation with exactly two participants. 
+    Validates duplicates and ensures the request user is included.
+    """
 
     serializer_class = ConversationSerializer
     permission_classes = [IsAuthenticated]
@@ -75,6 +83,13 @@ class ConversationListCreateView(generics.ListCreateAPIView):
 
 
 class MessageListCreateView(generics.ListCreateAPIView):
+    """
+    list:
+    List all messages in a conversation.
+
+    create:
+    Send a new message in a conversation. Only participants can send messages.
+    """
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
