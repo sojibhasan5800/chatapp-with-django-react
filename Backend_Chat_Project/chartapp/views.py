@@ -6,10 +6,26 @@ from django.shortcuts import get_object_or_404
 from .models import *
 from .serializers import *
 from rest_framework.exceptions import PermissionDenied
+from drf_yasg.utils import swagger_auto_schema
+
 
 class CreateUserView(generics.CreateAPIView):
+    """
+    Register a new user
+    """
     queryset = User.objects.all()
     serializer_class = UserSerializer
+
+    @swagger_auto_schema(
+        operation_summary="Register new user",
+        operation_description="Create a new user with username and password",
+        request_body=UserSerializer,
+        responses={201: UserSerializer},
+        tags=['Authentication']
+        )
+    def post(self, request, *args, **kwargs):
+        return super().post(request, *args, **kwargs)
+
 
 
 class UserListView(generics.ListAPIView):
