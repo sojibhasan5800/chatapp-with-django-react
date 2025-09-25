@@ -29,9 +29,20 @@ class CreateUserView(generics.CreateAPIView):
 
 
 class UserListView(generics.ListAPIView):
+    """
+    List all registered users (requires authentication)
+    """
     queryset = User.objects.all()
     serializer_class = UserListSerializer
     permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        operation_summary="List all users",
+        operation_description="Returns a list of all registered users",
+        tags=['Users']
+        )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
 
 class ConversationListCreateView(generics.ListCreateAPIView):
     """
