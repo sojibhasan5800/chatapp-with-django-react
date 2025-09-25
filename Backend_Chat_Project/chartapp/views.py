@@ -175,8 +175,28 @@ class MessageListCreateView(generics.ListCreateAPIView):
         if self.request.user not in conversation.participants.all():
             raise PermissionDenied('You are not a participant of this conversation')
         return conversation
+    
+    @swagger_auto_schema(
+        operation_summary="List messages",
+        operation_description="List all messages for a conversation",
+        tags=['Messages']
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        operation_summary="Send message",
+        operation_description="Send a new message in a conversation",
+        request_body=CreateMessageSerializer,
+        responses={201: MessageSerializer},
+        tags=['Messages']
+    )
+    def post(self, request, *args, **kwargs):
+        return super().post(request, *args, **kwargs)
+
 
 class MessageRetrieveDestroyView(generics.RetrieveDestroyAPIView):
+
     permission_classes = [IsAuthenticated]
     serializer_class = MessageSerializer
 
