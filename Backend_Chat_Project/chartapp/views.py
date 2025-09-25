@@ -195,6 +195,7 @@ class MessageListCreateView(generics.ListCreateAPIView):
         return super().post(request, *args, **kwargs)
 
 
+
 class MessageRetrieveDestroyView(generics.RetrieveDestroyAPIView):
     """
     retrieve:
@@ -208,6 +209,9 @@ class MessageRetrieveDestroyView(generics.RetrieveDestroyAPIView):
     serializer_class = MessageSerializer
 
     def get_queryset(self):
+        # Swagger schema generation safeguard
+        if getattr(self, 'swagger_fake_view', False):
+            return Message.objects.none()
         conversation_id = self.kwargs['conversation_id']
         return Message.objects.filter(conversation__id=conversation_id)
 
@@ -216,25 +220,21 @@ class MessageRetrieveDestroyView(generics.RetrieveDestroyAPIView):
             raise PermissionDenied('You are not the sender of this message')
         instance.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-    
-       # --- Swagger decorator for GET (retrieve) ---
+
     @swagger_auto_schema(
         operation_summary="Retrieve a single message",
         operation_description="Retrieve the details of a single message by message ID",
         responses={200: MessageSerializer},
         tags=['Messages']
-        )
+    )
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
 
-    # --- Swagger decorator for DELETE (destroy) ---
     @swagger_auto_schema(
         operation_summary="Delete a message",
         operation_description="Delete a message only if the logged-in user is the sender",
         responses={204: 'Message deleted successfully'},
         tags=['Messages']
-        )
+    )
     def delete(self, request, *args, **kwargs):
         return super().delete(request, *args, **kwargs)
-    
-    
